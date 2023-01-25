@@ -1,3 +1,7 @@
+#Install PyPDF2
+#pip install PyPDF2
+#This script takes the first page of 4 PDF files and merges them into one PDF file
+
 import PyPDF2
 
 # specify the PDF file names
