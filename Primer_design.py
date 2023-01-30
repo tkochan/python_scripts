@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+#This is python script to design primers to knockout a gene included in file genes.txt from a strain included in file genome.fasta.
+#1) It blasts the gene against the genome, outputs the exact allele that the strain has.
+#2) extracts 700 base pairs upstream and 700 base pairs downstream of the gene
+#3) designs primers to amplify those two fragments using primer3
+#4) adds the necessary over hangs for gibson cloning
+#5) outputs all of the designed primers with overhangs to a CSV
+
+#Dependencies
+#install primer3
+#install blast
+
 import os
 from Bio import SeqIO
 import primer3
@@ -10,7 +21,7 @@ os.system("makeblastdb -in genome.fasta -out databaseName -dbtype nucl > /dev/nu
 # Perform the BLAST search
 os.system("blastn -query genes.txt -db databaseName -outfmt '6' > outfileName")
 
-# Read the BLAST results from the outfile
+# Read the BLAST results from the outfile output sequence that has the highest identity and coverage
 with open("outfileName", "r") as outfile:
     max_coverage = 0
     max_identity = 0
@@ -21,21 +32,30 @@ with open("outfileName", "r") as outfile:
         sseqid = fields[1]
         identity = float(fields[2])
         coverage = float(fields[3])
+        print(max_coverage)
+        print(max_identity)
         qstart = int(fields[6])
         qend = int(fields[7])
         sstart = int(fields[8])
         send = int(fields[9])
-        if identity >= 85 and coverage >= max_coverage:
+        print(sseqid)
+        if identity >= max_identity and coverage >= max_coverage:
             max_coverage = coverage
+            print(max_coverage)
             max_identity = identity
+            print(max_identity)
             max_gene = qseqid
+            sseqid_record = sseqid
+            sstart_record = sstart
+            send_record = send
+
 
 # Extract the aligned gene from the genome
 with open("genome.fasta", "r") as genome_file:
     for genome_record in SeqIO.parse(genome_file, "fasta"):
-        if genome_record.id == sseqid:
-            aligned_gene = genome_record.seq[min(sstart, send) - 1:max(sstart, send)]
-
+        if genome_record.id == sseqid_record:
+            aligned_gene = genome_record.seq[min(sstart_record, send_record) - 1:max(sstart_record, send_record)]
+            print(aligned_gene)
 # Write the aligned gene to a FASTA file
 with open("aligned_gene.fasta", "w") as aligned_gene_file:
     aligned_gene_file.write(">" + max_gene + "\n")
@@ -65,6 +85,23 @@ with open("genome.fasta", "r") as genome_file:
                     with open("downstream.fasta", "w") as downstream_file:
                         downstream_file.write(">downstream_sequence\n")
                         downstream_file.write(str(downstream))
+# Open the genome file as a FASTA file
+with open("genome.fasta", "r") as genome_file:
+    # Iterate through each record in the FASTA file
+    for genome_record in SeqIO.parse(genome_file, "fasta"):
+        # Open the gene file as a FASTA file
+        with open("aligned_gene.fasta", "r") as gene_file:
+            for gene_record in SeqIO.parse(gene_file, "fasta"):
+                gene = str(gene_record.seq)
+                if gene in str(genome_record.seq):
+                    gene_start = str(genome_record.seq).index(gene)
+                    gene_end = gene_start + len(gene)
+                    if gene_start-1000>0:
+                        upstream2 = genome_record.seq[gene_start-1000:gene_start-0]
+                    else:
+                        upstream2 = genome_record.seq[0:gene_start-0]
+                    downstream2 = genome_record.seq[gene_end:gene_end+1000]
+
 
 # Set global parameters for primer3
 global_args = {
@@ -76,7 +113,7 @@ global_args = {
     'PRIMER_EXPLAIN_FLAG': '1'
 }
 global_args2 = {
-    'PRIMER_PRODUCT_SIZE_RANGE': [1301,1400],
+    'PRIMER_PRODUCT_SIZE_RANGE': [1401,1800],
     'PRIMER_MIN_SIZE': 15,
     'PRIMER_MAX_SIZE': 25,
     'PRIMER_OPT_SIZE': 20,
@@ -94,7 +131,7 @@ upstream_seq = upstream_seq.splitlines()
 upstream_seq = "\n".join(upstream_seq[1:])
 
 #join upstream aligned gene and downstream sequences
-complete= upstream_seq+downstream_seq
+complete= str(upstream2+downstream2)
 complete2= upstream_seq+aligned_gene+downstream_seq
 #downstream_seq = downstream_seq.replace(">downstream_sequence", "")
 #upstream_seq = upstream_seq.replace(">upstream_sequence", "")
@@ -135,23 +172,24 @@ print(primer_results3)
 for i in range(primer_results3['PRIMER_PAIR_NUM_RETURNED']):
     primer8 = primer_results3['PRIMER_RIGHT_{}_SEQUENCE'.format(i)]
     primer7 = primer_results3['PRIMER_LEFT_{}_SEQUENCE'.format(i)]
-
+#Apramycin sequence
+apramycin = "tgtaggctggagctgcttcgaagttcctatactttctagagaataggaacttcggaataggaacttatgagctcagccaatcgactggcgagcggcatcgcattcttcgcatcccgcctctggcggatgcaggaagatcaacggatctcggcccagttgacccagggctgtcgccacaatgtcgcgggagcggatcaaccgagcaaaggcatgaccgactggaccttccttctgaaggctcttctccttgagccacctgtccgccaaggcaaagcgctcacagcagtggtcattctcgagataatcgacgcgtaccaacttgccatcctgaagaatggtgcagtgtctcggcaccccatagggaacctttgccatcaactcggcaagatgcagcgtcgtgttggcatcgtgtcccacgccgaggagaagtacctgcccatcgagttcatggacacgggcgaccgggcttgcaggcgagtgaggtggcaggggcaatggatcagagatgatctgctctgcctgtggccccgctgccgcaaaggcaaatggatgggcgctgcgctttacatttggcaggcgccagaatgtgtcagagacaactccaaggtccggtgtaacgggcgacgtggcaggatcgaacggctcgtcgtccagacctgaccacgagggcatgacgagcgtccctcccggacccagcgcagcacgcagggcctcgatcagtccaagtggcccatcttcgaggggccggacgctacggaaggagctgtggaccagcagcacaccgccgggggtaaccccaaggttgagaagctgaccgatgagctcggcttttcgccattcgtattgcacgacattgcactccaccgctgatgacatcagtcgatcatagcacgatcaacggcactgttgcaaatagtcggtggtgataaacttatcatccccttttgctgatggagctgcattcaaaggccggcattttcagcgtgacatcattctgtgggccgtacgctggtactgcaaatacggcatcagttaccgtgagctgcattttccgctgcataaccctgcttcggggtcattatagcgattttttcggtatatccatcctttttcgcacgatatacaggattttgccaaagggttcgtgtagactttccttggtgtatccaacggcgtcagccgggcaggataggtgaagtaggcccacccgcgagcgggtgttccttcttcactgtcccttattcgcacctggcggtgctcaacgggaatcctgctctgcgaggctggcgggaacttcgaagttcctatactttctagagaataggaacttcgaactgcaggtcgacggatccccggaa"
 #Define Primers
 primer1 = left_seq
 primer2 = upstream_seq[-25:].translate(str.maketrans("ATGC", "TACG"))[::-1]
-primer3 = "ATCATTTGTAGGCTGGAGCTGCTTC"
-primer4 = "GTGGAATTCCGGGGATCCGTCGACC"
+primer3 = "TGTAGGCTGGAGCTGCTTCGAAGTT"
+primer4 = "TTCCGGGGATCCGTCGACCTGCAGT"
 primer5 = downstream_seq[:25]
 primer6 = right_seq
 
 
 #Define Overhangs
-primer1_overhang = "TATTCAGCCCCCGTA"
+primer1_overhang = "CCAAGCTTCTCGAGG"
 primer2_overhang = "CAGCTCCAGCCTACA"
-primer3_overhang = upstream_seq[-15:].translate(str.maketrans("ATGC", "TACG"))[::-1]
+primer3_overhang = upstream_seq[-15:]
 primer4_overhang = downstream_seq[:15].translate(str.maketrans("ATGC", "TACG"))[::-1]
-primer5_overhang = "ACGGATCCCCGGAATT"
-primer6_overhang = "CGGGTTCGCTACGGT"
+primer5_overhang = "GACGGATCCCCGGAA"
+primer6_overhang = "CGGGCTGCAGGAATT"
 
 
 #Add Overhangs
@@ -170,7 +208,9 @@ print(primer5)
 print(primer6)
 print(primer7)
 print(primer8)
-print(complete2)
+complete=">Complete\n"
+complete = str(complete+upstream2+apramycin+downstream2)
+print(complete)
 
 primers = [
     {"Primer": "Primer 1", "Sequence": primer1},
