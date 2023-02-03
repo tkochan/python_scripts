@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#This is python script to design primers to knockout a gene included in file genes.txt from a strain included in file genome.fasta.
+#This is python script to design primers to knockout a gene included in a fastA file from a genome in fastA file.
 #1) It blasts the gene against the genome, outputs the exact allele that the strain has.
 #2) extracts 700 base pairs upstream and 700 base pairs downstream of the gene
 #3) designs primers to amplify those two fragments using primer3
@@ -7,24 +7,42 @@
 #5) designs confirmation primers that are designed to be outside of the cloning primers
 #6) outputs all of the designed primers with overhangs to a CSV
 #7) outputs the fragment (upstream-apramycin cassette-downstream) of DNA these primers are meant to amplify and clone as a variable called complete
+#8) format should be python3 Primer_design.py {gene fastA file} {genome fastA file}
 
 #Dependencies
 #install primer3
 #install blast
 
 import os
+import sys
 from Bio import SeqIO
 import primer3
 import csv
 
+# Get the input filenames from the command line
+gene = sys.argv[1]
+genome = sys.argv[2]
+
 # Create the BLAST database for the genome
-os.system("makeblastdb -in genome.fasta -out databaseName -dbtype nucl > /dev/null")
+os.system(f"makeblastdb -in {genome} -out tmp -dbtype nucl > /dev/null")
+
 
 # Perform the BLAST search
-os.system("blastn -query genes.txt -db databaseName -outfmt '6' > outfileName")
+os.system(f"blastn -query {gene} -db tmp -outfmt '6' > blast_output")
+
+# Remove the BLAST database files
+os.remove("tmp.nin")
+os.remove("tmp.nhr")
+os.remove("tmp.nsq")
+os.remove("tmp.njs")
+os.remove("tmp.ntf")
+os.remove("tmp.nto")
+os.remove("tmp.not")
+os.remove("tmp.ndb")
+
 
 # Read the BLAST results from the outfile output sequence that has the highest identity and coverage
-with open("outfileName", "r") as outfile:
+with open("blast_output", "r") as outfile:
     max_coverage = 0
     max_identity = 0
     max_gene = ""
@@ -34,18 +52,13 @@ with open("outfileName", "r") as outfile:
         sseqid = fields[1]
         identity = float(fields[2])
         coverage = float(fields[3])
-        print(max_coverage)
-        print(max_identity)
         qstart = int(fields[6])
         qend = int(fields[7])
         sstart = int(fields[8])
         send = int(fields[9])
-        print(sseqid)
         if identity >= max_identity and coverage >= max_coverage:
             max_coverage = coverage
-            print(max_coverage)
             max_identity = identity
-            print(max_identity)
             max_gene = qseqid
             sseqid_record = sseqid
             sstart_record = sstart
@@ -53,18 +66,18 @@ with open("outfileName", "r") as outfile:
 
 
 # Extract the aligned gene from the genome
-with open("genome.fasta", "r") as genome_file:
+with open(genome, "r") as genome_file:
     for genome_record in SeqIO.parse(genome_file, "fasta"):
         if genome_record.id == sseqid_record:
             aligned_gene = genome_record.seq[min(sstart_record, send_record) - 1:max(sstart_record, send_record)]
-            print(aligned_gene)
+
 # Write the aligned gene to a FASTA file
 with open("aligned_gene.fasta", "w") as aligned_gene_file:
     aligned_gene_file.write(">" + max_gene + "\n")
     aligned_gene_file.write(str(aligned_gene))
 
 # Open the genome file as a FASTA file
-with open("genome.fasta", "r") as genome_file:
+with open(genome, "r") as genome_file:
     # Iterate through each record in the FASTA file
     for genome_record in SeqIO.parse(genome_file, "fasta"):
         # Open the gene file as a FASTA file
@@ -79,7 +92,7 @@ with open("genome.fasta", "r") as genome_file:
                     else:
                         upstream = genome_record.seq[0:gene_start-0]
                     downstream = genome_record.seq[gene_end:gene_end+700]
-                    print(len(upstream))
+
                     # Write the upstream and downstream sequences to FASTA files
                     with open("upstream.fasta", "w") as upstream_file:
                         upstream_file.write(">upstream_sequence\n")
@@ -88,7 +101,7 @@ with open("genome.fasta", "r") as genome_file:
                         downstream_file.write(">downstream_sequence\n")
                         downstream_file.write(str(downstream))
 # Open the genome file as a FASTA file
-with open("genome.fasta", "r") as genome_file:
+with open(genome, "r") as genome_file:
     # Iterate through each record in the FASTA file
     for genome_record in SeqIO.parse(genome_file, "fasta"):
         # Open the gene file as a FASTA file
@@ -103,8 +116,6 @@ with open("genome.fasta", "r") as genome_file:
                     else:
                         upstream2 = genome_record.seq[0:gene_start-0]
                     downstream2 = genome_record.seq[gene_end:gene_end+1000]
-
-
 # Set global parameters for primer3
 global_args = {
     'PRIMER_PRODUCT_SIZE_RANGE': [450,650],
@@ -135,9 +146,7 @@ upstream_seq = "\n".join(upstream_seq[1:])
 #join upstream aligned gene and downstream sequences
 complete= str(upstream2+downstream2)
 complete2= upstream_seq+aligned_gene+downstream_seq
-#downstream_seq = downstream_seq.replace(">downstream_sequence", "")
-#upstream_seq = upstream_seq.replace(">upstream_sequence", "")
-# Set sequence arguments for primer3
+
 seq_args1 = {
     'SEQUENCE_ID': 'gene1',
     'SEQUENCE_TEMPLATE':  upstream_seq,
@@ -162,15 +171,13 @@ for i in range(primer_results1['PRIMER_PAIR_NUM_RETURNED']):
     left_seq = primer_results1['PRIMER_LEFT_{}_SEQUENCE'.format(i)]
 
 primer_results2 = primer3.bindings.designPrimers(seq_args2, global_args,)
-print(primer_results1)
-print(len(upstream))
-print(primer_results2)
+
 
 for i in range(primer_results2['PRIMER_PAIR_NUM_RETURNED']):
     right_seq = primer_results2['PRIMER_RIGHT_{}_SEQUENCE'.format(i)]
 
 primer_results3 = primer3.bindings.designPrimers(seq_args3, global_args2,)
-print(primer_results3)
+
 for i in range(primer_results3['PRIMER_PAIR_NUM_RETURNED']):
     primer8 = primer_results3['PRIMER_RIGHT_{}_SEQUENCE'.format(i)]
     primer7 = primer_results3['PRIMER_LEFT_{}_SEQUENCE'.format(i)]
@@ -202,17 +209,11 @@ primer5 = primer5_overhang + primer5
 primer4 = primer4_overhang + primer4
 primer6 = primer6_overhang + primer6
 
-print(primer1)
-print(primer2)
-print(primer3)
-print(primer4)
-print(primer5)
-print(primer6)
-print(primer7)
-print(primer8)
+
 complete=">Complete\n"
 complete = str(complete+upstream2+apramycin+downstream2)
-print(complete)
+with open("complete.fasta", "w") as complete_file:
+    complete_file.write(str(complete))
 
 primers = [
     {"Primer": "Primer 1", "Sequence": primer1},
