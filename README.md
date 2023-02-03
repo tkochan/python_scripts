@@ -14,3 +14,7 @@ This requires local installations of primer3 and blast
 Usage:
 
 python3 Primer_design.py {gene fastA file} {genome fastA file}
+
+Using the files in the sample data folder:
+
+python3 Primer_design.py genes.txt genome.fasta
