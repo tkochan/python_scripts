@@ -11,6 +11,6 @@ This is python script to design primers to knockout a gene included in a fastA f
 This requires local installations of primer3 and blast
 
 
-Usuage:
+Usage:
 
 python3 Primer_design.py {gene fastA file} {genome fastA file}
