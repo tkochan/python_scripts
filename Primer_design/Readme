@@ -1,20 +1,27 @@
 This is python script to design primers to knockout a gene included in a fastA file from a genome in fastA file.
 1) It blasts the gene against the genome, outputs the exact allele that the strain has.
-2) extracts 700 base pairs upstream and 700 base pairs downstream of the gene
+2) extracts sequence of upstream and downstream of the gene. Sizes of these pieces are included as input.
 3) designs primers to amplify those two fragments using primer3
 4) adds the necessary over hangs for gibson cloning
 5) designs confirmation primers that are designed to be outside of the cloning primers
 6) outputs all of the designed primers with overhangs to primers.csv
-7) outputs the fragment (upstream-apramycin cassette-downstream) of DNA these primers are meant to amplify and clone as complete.fasta
+7) for Klebsiella it outputs the fragment (upstream + apramycin cassette + downstream) of DNA these primers are meant to amplify and clone as complete.fasta
+8) for Pseudomonas is outputs the fragment (upstream + scar + downstream) of DNA these primers are meant to amplify and clone as complete.fasta
 
-
-This requires local installations of primer3 and blast
+This requires local installations of primer3, biopython, and  and blast
 
 
 Usage:
 
-python3 Primer_design.py {gene fastA file} {genome fastA file}
+python3 Primer_design.py {gene fastA file} {genome fastA file} {Species Kp or Pa} {plasmid 1 or 2 (only important for Pa)} {size of each fragment in b} {Maximum melting temp of primers}
 
 Using the files in the sample data folder:
 
-python3 Primer_design.py genes.txt genome.fasta
+For Klebsiella
+python3 Primer_design.py genes.txt genome.fasta Kp 1 500 63
+
+For Pseudomonas (pexG2)
+python3 Primer_design.py genes.txt genome.fasta Kp 1 750 68
+
+For Pseudomonas (pex18hyg)
+python3 Primer_design.py genes.txt genome.fasta Kp 2 750 68
