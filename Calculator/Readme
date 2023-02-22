@@ -17,10 +17,11 @@ pip install tkinter
 Clone this repository: git clone https://github.com/your-username/your-repository.git
 Navigate to the directory where the script is located: cd your-repository
 Run the script: python your-script-name.py
-Usage
+
+## Usage
 The GUI will display four input fields where you can enter values for volume of stock to add, concentration of stock, final volume, and final concentration. Each input field is followed by a drop-down menu where you can select the unit of measurement for that input.
 
 Once you've entered the values for at least three of the four fields, click the "Calculate" button to solve for the missing variable. The answer will be displayed in the remaining field.
 
-#License
+## License
 This script is licensed under the MIT License. Feel free to use and modify it as you wish.
