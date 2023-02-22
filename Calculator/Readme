@@ -1,0 +1,24 @@
+README
+This script is a tool to calculate the concentration or volume of a solution when given certain inputs. It includes a graphical user interface created using the tkinter module, and can handle a variety of units for volume and concentration.
+
+Dependencies
+This script requires the following Python modules:
+
+Python3
+& 
+tkinter module
+
+Run:
+pip install tkinter
+
+Installation
+Clone this repository: git clone https://github.com/your-username/your-repository.git
+Navigate to the directory where the script is located: cd your-repository
+Run the script: python your-script-name.py
+Usage
+The GUI will display four input fields where you can enter values for volume of stock to add, concentration of stock, final volume, and final concentration. Each input field is followed by a drop-down menu where you can select the unit of measurement for that input.
+
+Once you've entered the values for at least three of the four fields, click the "Calculate" button to solve for the missing variable. The answer will be displayed in the remaining field.
+
+License
+This script is licensed under the MIT License. Feel free to use and modify it as you wish.
