@@ -1,4 +1,4 @@
-README
+#README
 This script is a tool to calculate the concentration or volume of a solution when given certain inputs. It includes a graphical user interface created using the tkinter module, and can handle a variety of units for volume and concentration.
 
 Dependencies
