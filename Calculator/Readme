@@ -20,5 +20,5 @@ The GUI will display four input fields where you can enter values for volume of 
 
 Once you've entered the values for at least three of the four fields, click the "Calculate" button to solve for the missing variable. The answer will be displayed in the remaining field.
 
-License
+#License
 This script is licensed under the MIT License. Feel free to use and modify it as you wish.
