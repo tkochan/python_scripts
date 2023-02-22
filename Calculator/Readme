@@ -11,7 +11,7 @@ tkinter module
 Run:
 
 ```
-pip install tkinter 
+```pip install tkinter``` 
 ```
 
 ## Installation
