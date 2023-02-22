@@ -55,21 +55,11 @@ result_labela.grid(row=4, columnspan=6)
 volume_unit_factors = {"L": 1, "mL": 1e-3, "uL": 1e-6}
 
 # Define concentration unit factors based on user input
-c1_unit = c1_dropdown.get()
-if c1_unit == "%w/v":
-    p = float(entry_c1.get())
-    wv_unit_factor = p
-else:
-    wv_unit_factor = 1
-c2_unit = c2_dropdown.get()
-if c2_unit == "%w/v":
-    p = float(entry_c2.get())
-    wv_unit_factor = p
-else:
-    wv_unit_factor = 1
-concentration_unit_factors = {"g/L": 1*wv_unit_factor, "mg/L": 1e-3*wv_unit_factor, "ug/L": 1e-6*wv_unit_factor,
-                        "g/mL": 1e3*wv_unit_factor, "mg/mL": 1*wv_unit_factor, "ug/mL": 1e-3*wv_unit_factor,
-                        "g/uL": 1e6*wv_unit_factor, "mg/uL": 1e3*wv_unit_factor, "ug/uL": 1*wv_unit_factor, "%w/v":wv_unit_factor}
+
+
+concentration_unit_factors = {"g/L": 1, "mg/L": 1e-3, "ug/L": 1e-6,
+                        "g/mL": 1e3, "mg/mL": 1, "ug/mL": 1e-3,
+                        "g/uL": 1e6, "mg/uL": 1e3, "ug/uL": 1, "%w/v":10}
 
 def calculate_missing_input():
     # Get the values from the input boxes
