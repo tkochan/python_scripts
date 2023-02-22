@@ -9,8 +9,9 @@ Python3
 tkinter module
 
 Run:
-pip install tkinter :+1:
-
+```
+pip install tkinter 
+```
 ## Installation
 Clone this repository: git clone https://github.com/your-username/your-repository.git
 Navigate to the directory where the script is located: cd your-repository
