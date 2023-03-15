@@ -6,20 +6,18 @@
 #4) adds the necessary over hangs for gibson cloning
 #5) designs confirmation primers that are designed to be outside of the cloning primers
 #6) outputs all of the designed primers with overhangs to a CSV
-#7) for Klebsiella outputs the fragment (upstream-apramycin cassette-downstream) of DNA these primers are meant to amplify and clone as a variable called complete
-#8) for Pseudomonas outputs the fragment
+#7) outputs the fragment (upstream-apramycin cassette-downstream) of DNA these primers are meant to amplify and clone as a variable called complete
 
 #Dependencies
 #install primer3
 #install blast
-#install biopython
-
 
 import os
 import sys
 from Bio import SeqIO
 import primer3
 import csv
+import codecs
 
 # Get the input filenames from the command line
 gene = sys.argv[1]
@@ -49,7 +47,14 @@ os.remove("tmp.nto")
 os.remove("tmp.not")
 os.remove("tmp.ndb")
 
+# create the directory if it doesn't already exist
+if not os.path.exists("CompleteSequences"):
+    os.mkdir("CompleteSequences")
 
+# Open the FASTA file and read the first line (header)
+with open(gene, "r") as f:
+    gene_name = f.readline().strip().lstrip(">")
+print(gene_name)
 # Read the BLAST results from the outfile output sequence that has the highest identity and coverage
 with open("blast_output", "r") as outfile:
     max_coverage = 0
@@ -186,7 +191,7 @@ seq_args3 = {
 primer_results1 = primer3.bindings.designPrimers(seq_args1, global_args,)
 for i in range(primer_results1['PRIMER_PAIR_NUM_RETURNED']):
     left_seq = primer_results1['PRIMER_LEFT_{}_SEQUENCE'.format(i)]
-    
+
 
 primer_results2 = primer3.bindings.designPrimers(seq_args2, global_args,)
 
@@ -229,22 +234,22 @@ if species == "Kp":
 
     complete=">Complete\n"
     complete = str(complete+upstream2+apramycin+downstream2)
-    with open("complete.fasta", "w") as complete_file:
+    with open("CompleteSequences/" + gene_name + "_complete.fasta", "w") as complete_file:
         complete_file.write(str(complete))
 
     primers = [
-        {"Primer": "Primer 1", "Sequence": primer1},
-        {"Primer": "Primer 2", "Sequence": primer2},
-        {"Primer": "Primer 3", "Sequence": primer3},
-        {"Primer": "Primer 4", "Sequence": primer4},
-        {"Primer": "Primer 5", "Sequence": primer5},
-        {"Primer": "Primer 6", "Sequence": primer6},
-        {"Primer": "Primer 7", "Sequence": primer7},
-        {"Primer": "Primer 8", "Sequence": primer8},
+        {"Primer": "Δ" + gene_name + "P1", "Sequence": primer1},
+        {"Primer": "∆" + gene_name + "P2", "Sequence": primer2},
+        {"Primer": "∆" + gene_name + "P3", "Sequence": primer3},
+        {"Primer": "∆" + gene_name + "P4", "Sequence": primer4},
+        {"Primer": "∆" + gene_name + "P5", "Sequence": primer5},
+        {"Primer": "∆" + gene_name + "P6", "Sequence": primer6},
+        {"Primer": "∆" + gene_name + "P7", "Sequence": primer7},
+        {"Primer": "∆" + gene_name + "P8", "Sequence": primer8},
     ]
 
-    with open("primers.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["Primer", "Sequence"])
+    with codecs.open('primers.csv', 'w', 'utf-8-sig') as f:
+        writer = csv.DictWriter(f, fieldnames=["Sequence","Primer"])
         writer.writeheader()
         for primer in primers:
             writer.writerow(primer)
@@ -287,21 +292,21 @@ if species == "Pa":
     complete=">Complete\n"
     scar="AACTCGAGCCGCAAGCATGCTGAA"
     complete = str(complete+upstream2+ scar + downstream2)
-    with open("complete.fasta", "w") as complete_file:
+    with open("CompleteSequences/" + gene_name + "_complete.fasta", "w") as complete_file:
         complete_file.write(str(complete))
 
     primers = [
-        {"Primer": "Primer 1", "Sequence": primer1},
-        {"Primer": "Primer 2", "Sequence": primer2},
-        {"Primer": "Primer 3", "Sequence": primer3},
-        {"Primer": "Primer 4", "Sequence": primer4},
-        {"Primer": "Primer 5", "Sequence": primer5},
-        {"Primer": "Primer 6", "Sequence": primer6},
+        {"Primer": "∆" + gene_name + "P1", "Sequence": primer1},
+        {"Primer": "∆" + gene_name + "P2", "Sequence": primer2},
+        {"Primer": "∆" + gene_name + "P3", "Sequence": primer3},
+        {"Primer": "∆" + gene_name + "P4", "Sequence": primer4},
+        {"Primer": "∆" + gene_name + "P5", "Sequence": primer5},
+        {"Primer": "∆" + gene_name + "P6", "Sequence": primer6},
 
     ]
 
-    with open("primers.csv", "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["Primer", "Sequence"])
+    with codecs.open('primers.csv', 'w', 'utf-8-sig') as f:
+        writer = csv.DictWriter(f, fieldnames=["Sequence","Primer"])
         writer.writeheader()
         for primer in primers:
             writer.writerow(primer)
