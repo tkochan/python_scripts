@@ -8,7 +8,7 @@ This is python script to design primers to knockout a gene included in a fastA f
 7) for Klebsiella it outputs the fragment (upstream + apramycin cassette + downstream) of DNA these primers are meant to amplify and clone as complete.fasta
 8) for Pseudomonas is outputs the fragment (upstream + scar + downstream) of DNA these primers are meant to amplify and clone as complete.fasta
 
-This requires local installations of primer3, biopython, and  and blast
+This requires local installations of primer3, biopython, and blast
 
 
 Usage:
