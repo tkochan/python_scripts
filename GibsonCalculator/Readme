@@ -1,1 +1,9 @@
 
+This is a Gibson Calculator GUI that:
+ Calculates the amount of volume of insert and vector to add based off of molar ratio, fragment size, and DNA concentrations.
+  
+ It autofills sizes for the fragments that are part of my normal workflow.
+ 
+ It also has an export button that will export the values to an existing CSV to the next available line (it will not over write the file).
+ 
+ 
