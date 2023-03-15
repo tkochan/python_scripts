@@ -37,7 +37,7 @@ os.system(f"makeblastdb -in {genome} -out tmp -dbtype nucl > /dev/null")
 # Perform the BLAST search
 os.system(f"blastn -query {gene} -db tmp -outfmt '6' > blast_output")
 
-# Remove the BLAST database files
+# Remove the BLAST database files. For some versions of blast this may give an error and the script will not run. (not all versions of blast create each file). 
 os.remove("tmp.nin")
 os.remove("tmp.nhr")
 os.remove("tmp.nsq")
