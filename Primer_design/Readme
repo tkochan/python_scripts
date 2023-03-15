@@ -17,11 +17,11 @@ python3 Primer_design.py {gene fastA file} {genome fastA file} {Species Kp or Pa
 
 Using the files in the sample data folder:
 
-For Klebsiella
+For Klebsiella (pUC16R6k)
 python3 Primer_design.py genes.txt genome.fasta Kp 1 500 63
 
 For Pseudomonas (pexG2)
-python3 Primer_design.py genes.txt genome.fasta Kp 1 750 68
+python3 Primer_design.py genes.txt genome.fasta Pa 1 750 68
 
 For Pseudomonas (pex18hyg)
-python3 Primer_design.py genes.txt genome.fasta Kp 2 750 68
+python3 Primer_design.py genes.txt genome.fasta Pa 2 750 68
