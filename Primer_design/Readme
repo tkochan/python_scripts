@@ -9,8 +9,8 @@ This is python script to design primers to knockout a gene included in a fastA f
 8) for Pseudomonas is outputs the fragment (upstream + scar + downstream) of DNA these primers are meant to amplify and clone as complete.fasta
 
 This requires local installations of:
-primer3-py (1.1.0) ```pip install primer3-py```
-biopython (1.23.1) ```pip install biopython```
+primer3-py (1.1.0) pip install primer3-py
+biopython (1.23.1) pip install biopython
 blast (2.13.0+)
 
 
