@@ -33,7 +33,7 @@ iv.	Filtered and Efron-Gong Bootstrap Optimization
 4.	Train a model using the 30 variables.  
 5.	
 6.	test.py (fix this to output the variables and number of occurrences)
-7.	random_forest_tuning_weighted3.py
+   
 
 
 b.	Hyperparameter tuning
@@ -88,7 +88,9 @@ iv.	Compare Models
 
 Kochan Statistical Factor (KSF)
 
-ksf = r2_train + 1.2 * r2_test
+ksf = r2_train + (k * r2_test)
+
+k= ko
 
 The idea is that out of thousands of variables, you want to choose the variables that have the most general applicability. If you only choose the variables that improve the r2_train you are choosing the variables that have the greatest correlation with the training data set. This is a recipe for over fitting and poor performance with a future test data set. 
 
