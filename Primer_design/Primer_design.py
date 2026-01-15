@@ -6,18 +6,20 @@
 #4) adds the necessary over hangs for gibson cloning
 #5) designs confirmation primers that are designed to be outside of the cloning primers
 #6) outputs all of the designed primers with overhangs to a CSV
-#7) outputs the fragment (upstream-apramycin cassette-downstream) of DNA these primers are meant to amplify and clone as a variable called complete
+#7) for Klebsiella outputs the fragment (upstream-apramycin cassette-downstream) of DNA these primers are meant to amplify and clone as a variable called complete
+#8) for Pseudomonas outputs the fragment
 
 #Dependencies
 #install primer3
 #install blast
+#install biopython
+
 
 import os
 import sys
 from Bio import SeqIO
 import primer3
 import csv
-import codecs
 
 # Get the input filenames from the command line
 gene = sys.argv[1]
@@ -26,6 +28,17 @@ species = sys.argv[3]
 plasmid = sys.argv[4]
 size =  sys.argv[5]
 MAX = sys.argv[6]
+
+# Create output directory based on gene file basename
+gene_basename = os.path.splitext(os.path.basename(gene))[0]
+outdir = gene_basename
+
+os.makedirs(outdir, exist_ok=True)
+
+def outpath(filename):
+    return os.path.join(outdir, filename)
+
+
 
 size = int(size) + 200
 maxsize = int(size) + 300
@@ -37,7 +50,7 @@ os.system(f"makeblastdb -in {genome} -out tmp -dbtype nucl > /dev/null")
 # Perform the BLAST search
 os.system(f"blastn -query {gene} -db tmp -outfmt '6' > blast_output")
 
-# Remove the BLAST database files. For some versions of blast this may give an error and the script will not run. (not all versions of blast create each file). 
+# Remove the BLAST database files
 os.remove("tmp.nin")
 os.remove("tmp.nhr")
 os.remove("tmp.nsq")
@@ -47,14 +60,7 @@ os.remove("tmp.nto")
 os.remove("tmp.not")
 os.remove("tmp.ndb")
 
-# create the directory if it doesn't already exist
-if not os.path.exists("CompleteSequences"):
-    os.mkdir("CompleteSequences")
 
-# Open the FASTA file and read the first line (header)
-with open(gene, "r") as f:
-    gene_name = f.readline().strip().lstrip(">")
-print(gene_name)
 # Read the BLAST results from the outfile output sequence that has the highest identity and coverage
 with open("blast_output", "r") as outfile:
     max_coverage = 0
@@ -217,12 +223,12 @@ if species == "Kp":
     primer6 = right_seq
 
     #Define Overhangs
-    primer1_overhang = "CCAAGCTTCTCGAGG"
-    primer2_overhang = "CAGCTCCAGCCTACA"
-    primer3_overhang = upstream_seq[-15:]
-    primer4_overhang = downstream_seq[:15].translate(str.maketrans("ATGC", "TACG"))[::-1]
-    primer5_overhang = "GACGGATCCCCGGAA"
-    primer6_overhang = "CGGGCTGCAGGAATT"
+    primer1_overhang = "ggtaccgggcCCAAGCTTCTCGAGG"
+    primer2_overhang = "aacttcgaagCAGCTCCAGCCTACA"
+    primer3_overhang = upstream_seq[-25:]
+    primer4_overhang = downstream_seq[:25].translate(str.maketrans("ATGC", "TACG"))[::-1]
+    primer5_overhang = "actgcaggtcGACGGATCCCCGGAA"
+    primer6_overhang = "gtggatccccCGGGCTGCAGGAATT"
 
     #Add Overhangs
     primer1 = primer1_overhang + primer1
@@ -234,22 +240,23 @@ if species == "Kp":
 
     complete=">Complete\n"
     complete = str(complete+upstream2+apramycin+downstream2)
-    with open("CompleteSequences/" + gene_name + "_complete.fasta", "w") as complete_file:
+    with open("complete.fasta", "w") as complete_file:
         complete_file.write(str(complete))
 
     primers = [
-        {"Primer": "Δ" + gene_name + "P1", "Sequence": primer1},
-        {"Primer": "∆" + gene_name + "P2", "Sequence": primer2},
-        {"Primer": "∆" + gene_name + "P3", "Sequence": primer3},
-        {"Primer": "∆" + gene_name + "P4", "Sequence": primer4},
-        {"Primer": "∆" + gene_name + "P5", "Sequence": primer5},
-        {"Primer": "∆" + gene_name + "P6", "Sequence": primer6},
-        {"Primer": "∆" + gene_name + "P7", "Sequence": primer7},
-        {"Primer": "∆" + gene_name + "P8", "Sequence": primer8},
-    ]
+    {"Primer": f"d{gene_basename} p1 Fwd", "Sequence": primer1},
+    {"Primer": f"d{gene_basename} p2 Rev", "Sequence": primer2},
+    {"Primer": f"d{gene_basename} p3 Fwd", "Sequence": primer3},
+    {"Primer": f"d{gene_basename} p4 Rev", "Sequence": primer4},
+    {"Primer": f"d{gene_basename} p5 Fwd", "Sequence": primer5},
+    {"Primer": f"d{gene_basename} p6 Rev", "Sequence": primer6},
+    {"Primer": f"d{gene_basename} p7 Fwd", "Sequence": primer7},
+    {"Primer": f"d{gene_basename} p8 Rev", "Sequence": primer8},
+]
 
-    with codecs.open('primers.csv', 'w', 'utf-8-sig') as f:
-        writer = csv.DictWriter(f, fieldnames=["Sequence","Primer"])
+
+    with open("primers.csv", "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["Primer", "Sequence"])
         writer.writeheader()
         for primer in primers:
             writer.writerow(primer)
@@ -292,21 +299,69 @@ if species == "Pa":
     complete=">Complete\n"
     scar="AACTCGAGCCGCAAGCATGCTGAA"
     complete = str(complete+upstream2+ scar + downstream2)
-    with open("CompleteSequences/" + gene_name + "_complete.fasta", "w") as complete_file:
+    with open("complete.fasta", "w") as complete_file:
         complete_file.write(str(complete))
 
     primers = [
-        {"Primer": "∆" + gene_name + "P1", "Sequence": primer1},
-        {"Primer": "∆" + gene_name + "P2", "Sequence": primer2},
-        {"Primer": "∆" + gene_name + "P3", "Sequence": primer3},
-        {"Primer": "∆" + gene_name + "P4", "Sequence": primer4},
-        {"Primer": "∆" + gene_name + "P5", "Sequence": primer5},
-        {"Primer": "∆" + gene_name + "P6", "Sequence": primer6},
+        {"Primer": "Primer 1", "Sequence": primer1},
+        {"Primer": "Primer 2", "Sequence": primer2},
+        {"Primer": "Primer 3", "Sequence": primer3},
+        {"Primer": "Primer 4", "Sequence": primer4},
+        {"Primer": "Primer 5", "Sequence": primer5},
+        {"Primer": "Primer 6", "Sequence": primer6},
 
     ]
 
-    with codecs.open('primers.csv', 'w', 'utf-8-sig') as f:
-        writer = csv.DictWriter(f, fieldnames=["Sequence","Primer"])
+    with open("primers.csv", "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["Primer", "Sequence"])
         writer.writeheader()
         for primer in primers:
             writer.writerow(primer)
+
+PREFIX_SEQ = "gcgaataagggacagtgaagaaggaacacccgctcgcgggtgggcctacttcacctatcctgcccggctgacgccgttggatacaccaaggaaagtctacacgaaccctttggcaaaatcctgtatatcgtgcgaaaaaggatggatataccgaaaaaatcgctataatgaccccgaagcagggttatgcagcggaaagtataccttaaggaatcccctgataccgctcgccgcagccgaacgaccgagcgcagcgggtcagtgagcgaggaagcggaagagcgcccaatacgcaaaccgcctctccccgcgcgttggccgattcattaatgcagcgcccaaacataacaggaagaaaaatgccccgctgtgggcggacaaaatagttgggaactgggaggggtggaaatggagtttttaaggattatttagggaagagtgacaaaatagatgggaactgggtgtagcgtcgtaagctaatacgaaaattaaaaatgacaaaatagtttggaactagatttcacttatctggttggcctgcaaggccttcgcgaggtaccgggcccaagcttctcgagg"   # replace with your prefix (hardcoded)
+SUFFIX_SEQ = "aattcctgcagcccgggggatccactagtgagctcatgcatgatctcgaattagcttcaaaagcgctctgaagttcctatactttctagagaataggaacttcggaataggaacttcaagatcccctgattccctttgtcaacagcaatggataattcgatttaacaaatgcatggcgcaagggctgctaaaggaagcggaacacgtagaaagccagtccgcagaaacggtgctgaccccggatgaatgtcagctactgggctatctggacaagggaaaacgcaagcgcaaagagaaagcaggtagcttgcagtgggcttacatggcgatagctagactgggcggttttatggacagcaagcgaaccggaattgccagctggggcgccctctggtaaggttgggaagccctgcaaagtaaactggatggctttcttgccgccaaggatctgatggcgcaggggatcaagatctgatcaagagacaggatgaggatcgtttcgcatgattgaacaagatggattgcacgcaggttctccggccgcttgggtggagaggctattcggctatgactgggcacaacagacaatcggctgctctgatgccgccgtgttccggctgtcagcgcaggggcgcccggttctttttgtcaagaccgacctgtccggtgccctgaatgaactgcaggacgaggcagcgcggctatcgtggctggccacgacgggcgttccttgcgcagctgtgctcgacgttgtcactgaagcgggaagggactggctgctattgggcgaagtgccggggcaggatctcctgtcatcccaccttgctcctgccgagaaagtatccatcatggctgatgcaatgcggcggctgcatacgcttgatccggctacctgcccattcgaccaccaagcgaaacatcgcatcgagcgagcacgtactcggatggaagccggtcttgtcgatcaggatgatctggacgaagagcatcaggggctcgcgccagccgaactgttcgccaggctcaaggcgcgcatgcccgacggcgaggatctcgtcgtgacccatggcgatgcctgcttgccgaatatcatggtggaaaatggccgcttttctggattcatcgactgtggccggctgggtgtggcggaccgctatcaggacatagcgttggctacccgtgatattgctgaagagcttggcggcgaatgggctgaccgcttcctcgtgctttacggtatcgccgctcccgattcgcagcgcatcgccttctatcgccttcttgacgagttcttctgaattgaaaaaggaagagtatgaggatccaacatttccaatcactagtgaattatctagaattattccattgagtaagtttttaagcacatcagcttcaaaagcgctctgaagttcctatactttctagagaataggaacttcggaataggtacttcaagatccccaattcgagatcgtccgggccgcaagctcctagcggcggatttgtcctactcaggagagcgttcaccgacaaacaacagataaaacgaaaggcccagtctttcgactgagcctttcgttttatttgatgcctcaagctagagagtcattaccccaggcgtttaagggcaccaataactgccttaaaaaaattacgccccgccctgccactcatcgcagtctagcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagctcagctaattaagctagcttatcgataccgtcgacctcgaaccccacgcccctctttaatacgacgggcaatttgcacttcagaaaatgaagagtttgctttagccataacaaaagtccagtatgctttttcacagcataactggactgatttcagtttacaactattctgtctagtttaagactttattgtcatagtttagatctattttgttcagtttaagactttattgtccgcctacacccgcttacgcagggcatccatttattactcaaccgtaaccgattttgccaggttacgcggctggtcctctagctggcgtaatagcgaagaggcccgcaccgatcgcccttcccaacagttgcgcagcctgaatggcgaatggcgcctgatgcggtattttctccttacgcatctgtgcggtatttcacaccgcatatggtgcactctcagtacaatctgctctgatgccgcatagttaagccagccccgacacccgccaacacccgctgacgcgccctgacgggcttgtctgctcccggcatccgcttacagacaagctgtgaccgtctccgggagctgcatgtgtcagaggttttcaccgtcatcaccgaaacgcgcgagacgaaagggcctcgtgatacgcctatttttataggttaatgtcatgataataatggtttcttagacgtcaggtggcacttttcggggaaatgtacgcggaacccctatttgtttatttttctaaatacattcaaatatgtatccgctcatgagacaataaccctgataaatgcttcaataatattgaaaaaggaagagtatgagtattcaacatttccgtgtcgcccttattcccttttttgcggcattttgccttcctgtttttgctcacccagaaacgctggtgaaagtaaaagatgctgaagatcagttgggtgcacgagtgggttacatcgaactggatctcaacagcggtaagatccttgagagttttcgccccgaagaacgttttccaatgatgagcacttttaaagttctgctatgtggcgcggtattatcccgtattgacgccgggcaagagcaactcggtcgccgcatacactattctcagaatgacttggttgagtactcaccagtcacagaaaagcatcttacggatggcatgacagtaagagaattatgcagtgctgccataaccatgagtgataacactgcggccaacttacttctgacaacgatcggaggaccgaaggagctaaccgcttttttgcacaacatgggggatcatgtaactcgccttgatcgttgggaaccggagctgaatgaagccataccaaacgacgagcgtgacaccacgatgcctgtagcaatggcaacaacgttgcgcaaactattaactggcgaactacttactctagcttcccggcaacaattaatagactggatggaggcggataaagttgcaggaccacttctgcgctcggcccttccggctggctggtttattgctgataaatctggagccggtgagcgtgggtctcgcggtatcattgcagcactggggccagatggtaagccctcccgtatcgtagttatctacacgacggggagtcaggcaactatggatgaacgaaatagacagatcgctgagataggtgcctcactgattaagcattggtaactgtcagaccaagtttactcatatatactttagattgatttaaaacttcatttttaatttaaaaggatctaggtgaagatcctttttgataatctcatgaccaaaatcccttaacgtgagttttcgttccactgagcgtcagaccccgtagaaaagatcaaaggatcttcttgagatcctttttttctgcgcgtaatctgctgcttgcaaacaaaaaaaccaccgctaccagcggtggtttgtttgccggatcaagagctaccaactctttttccgaaggtaactggcttcagcagagcgcagataccaaatactgttcttctagtgtagccgtagttaggccaccacttcaagaactctgtagcaccgcctacatacctcgctctgctaatcctgttaccagccggttgtcagccgttaagtgttcctgtgtcactcaaaattgctttgagaggctctaagggcttctcagtgcgttacatccctggcttgttgtccacaaccgttaaaccttaaaagctttaaaagccttatatattcttttttttcttataaaacttaaaaccttagaggctatttaagttgctgatttatattaattttattgttcaaacatgagagcttagtacgtgaaacatgagagcttagtacgttagccatgagagcttagtacgttagccatgagggtttagttcgttaaacatgagagcttagtacgttaaacttgagagcttagtacgtgaaacatgagagcttagtacgtactatcaacaggttgaactgcccatgttctttcctgcgttatcagagcttatcggccagcctcgcagagcaggattcccgttgagcaccgccaggt"   # replace with your suffix (hardcoded)
+
+complete_path = "complete.fasta"
+complete_vector_path = "complete_vector.fasta"
+
+if os.path.exists(complete_path):
+    with open(complete_path, "r") as cf:
+        lines = cf.read().splitlines()
+    if lines and lines[0].startswith(">"):
+        seq = "".join(lines[1:])
+    else:
+        seq = "".join(lines)
+    new_seq = PREFIX_SEQ + seq + SUFFIX_SEQ
+    with open(complete_vector_path, "w") as outvf:
+        outvf.write(">Complete_vector\n")
+        outvf.write(new_seq)
+
+
+    # --------------------------------------------------
+# Move output files into gene-named directory
+# --------------------------------------------------
+import shutil
+
+
+
+output_files = [
+    "blast_output",
+    "aligned_gene.fasta",
+    "upstream.fasta",
+    "downstream.fasta",
+    "complete.fasta",
+    "complete_vector.fasta",
+    "primers.csv"
+]
+
+
+
+for fname in output_files:
+    if os.path.exists(fname):
+        dest = os.path.join(outdir, fname)
+        try:
+            shutil.move(fname, dest)
+        except shutil.Error:
+            # File exists — overwrite
+            os.remove(dest)
+            shutil.move(fname, dest)
