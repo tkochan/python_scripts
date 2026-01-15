@@ -223,14 +223,16 @@ if species == "Kp":
     primer6 = right_seq
 
     #Define Overhangs
-    primer1_overhang = "ggtaccgggcCCAAGCTTCTCGAGG"
-    primer2_overhang = "aacttcgaagCAGCTCCAGCCTACA"
+    primer1_overhang = "ggtaccgggcccaagcttctcgagg"
+    primer2_overhang = "aacttcgaagcagctccagcctaca"
     primer3_overhang = upstream_seq[-25:]
     primer4_overhang = downstream_seq[:25].translate(str.maketrans("ATGC", "TACG"))[::-1]
-    primer5_overhang = "actgcaggtcGACGGATCCCCGGAA"
-    primer6_overhang = "gtggatccccCGGGCTGCAGGAATT"
+    primer5_overhang = "actgcaggtcgacggatccccggaa"
+    primer6_overhang = "gtggatcccccgggctgcaggaatt"
 
     #Add Overhangs
+    primer1_vector = primer1
+    primer6_vector = primer6
     primer1 = primer1_overhang + primer1
     primer3 = primer3_overhang + primer3
     primer2 = primer2_overhang + primer2
@@ -321,21 +323,61 @@ if species == "Pa":
 PREFIX_SEQ = "gcgaataagggacagtgaagaaggaacacccgctcgcgggtgggcctacttcacctatcctgcccggctgacgccgttggatacaccaaggaaagtctacacgaaccctttggcaaaatcctgtatatcgtgcgaaaaaggatggatataccgaaaaaatcgctataatgaccccgaagcagggttatgcagcggaaagtataccttaaggaatcccctgataccgctcgccgcagccgaacgaccgagcgcagcgggtcagtgagcgaggaagcggaagagcgcccaatacgcaaaccgcctctccccgcgcgttggccgattcattaatgcagcgcccaaacataacaggaagaaaaatgccccgctgtgggcggacaaaatagttgggaactgggaggggtggaaatggagtttttaaggattatttagggaagagtgacaaaatagatgggaactgggtgtagcgtcgtaagctaatacgaaaattaaaaatgacaaaatagtttggaactagatttcacttatctggttggcctgcaaggccttcgcgaggtaccgggcccaagcttctcgagg"   # replace with your prefix (hardcoded)
 SUFFIX_SEQ = "aattcctgcagcccgggggatccactagtgagctcatgcatgatctcgaattagcttcaaaagcgctctgaagttcctatactttctagagaataggaacttcggaataggaacttcaagatcccctgattccctttgtcaacagcaatggataattcgatttaacaaatgcatggcgcaagggctgctaaaggaagcggaacacgtagaaagccagtccgcagaaacggtgctgaccccggatgaatgtcagctactgggctatctggacaagggaaaacgcaagcgcaaagagaaagcaggtagcttgcagtgggcttacatggcgatagctagactgggcggttttatggacagcaagcgaaccggaattgccagctggggcgccctctggtaaggttgggaagccctgcaaagtaaactggatggctttcttgccgccaaggatctgatggcgcaggggatcaagatctgatcaagagacaggatgaggatcgtttcgcatgattgaacaagatggattgcacgcaggttctccggccgcttgggtggagaggctattcggctatgactgggcacaacagacaatcggctgctctgatgccgccgtgttccggctgtcagcgcaggggcgcccggttctttttgtcaagaccgacctgtccggtgccctgaatgaactgcaggacgaggcagcgcggctatcgtggctggccacgacgggcgttccttgcgcagctgtgctcgacgttgtcactgaagcgggaagggactggctgctattgggcgaagtgccggggcaggatctcctgtcatcccaccttgctcctgccgagaaagtatccatcatggctgatgcaatgcggcggctgcatacgcttgatccggctacctgcccattcgaccaccaagcgaaacatcgcatcgagcgagcacgtactcggatggaagccggtcttgtcgatcaggatgatctggacgaagagcatcaggggctcgcgccagccgaactgttcgccaggctcaaggcgcgcatgcccgacggcgaggatctcgtcgtgacccatggcgatgcctgcttgccgaatatcatggtggaaaatggccgcttttctggattcatcgactgtggccggctgggtgtggcggaccgctatcaggacatagcgttggctacccgtgatattgctgaagagcttggcggcgaatgggctgaccgcttcctcgtgctttacggtatcgccgctcccgattcgcagcgcatcgccttctatcgccttcttgacgagttcttctgaattgaaaaaggaagagtatgaggatccaacatttccaatcactagtgaattatctagaattattccattgagtaagtttttaagcacatcagcttcaaaagcgctctgaagttcctatactttctagagaataggaacttcggaataggtacttcaagatccccaattcgagatcgtccgggccgcaagctcctagcggcggatttgtcctactcaggagagcgttcaccgacaaacaacagataaaacgaaaggcccagtctttcgactgagcctttcgttttatttgatgcctcaagctagagagtcattaccccaggcgtttaagggcaccaataactgccttaaaaaaattacgccccgccctgccactcatcgcagtctagcttggattctcaccaataaaaaacgcccggcggcaaccgagcgttctgaacaaatccagatggagttctgaggtcattactggatctatcaacaggagtccaagctcagctaattaagctagcttatcgataccgtcgacctcgaaccccacgcccctctttaatacgacgggcaatttgcacttcagaaaatgaagagtttgctttagccataacaaaagtccagtatgctttttcacagcataactggactgatttcagtttacaactattctgtctagtttaagactttattgtcatagtttagatctattttgttcagtttaagactttattgtccgcctacacccgcttacgcagggcatccatttattactcaaccgtaaccgattttgccaggttacgcggctggtcctctagctggcgtaatagcgaagaggcccgcaccgatcgcccttcccaacagttgcgcagcctgaatggcgaatggcgcctgatgcggtattttctccttacgcatctgtgcggtatttcacaccgcatatggtgcactctcagtacaatctgctctgatgccgcatagttaagccagccccgacacccgccaacacccgctgacgcgccctgacgggcttgtctgctcccggcatccgcttacagacaagctgtgaccgtctccgggagctgcatgtgtcagaggttttcaccgtcatcaccgaaacgcgcgagacgaaagggcctcgtgatacgcctatttttataggttaatgtcatgataataatggtttcttagacgtcaggtggcacttttcggggaaatgtacgcggaacccctatttgtttatttttctaaatacattcaaatatgtatccgctcatgagacaataaccctgataaatgcttcaataatattgaaaaaggaagagtatgagtattcaacatttccgtgtcgcccttattcccttttttgcggcattttgccttcctgtttttgctcacccagaaacgctggtgaaagtaaaagatgctgaagatcagttgggtgcacgagtgggttacatcgaactggatctcaacagcggtaagatccttgagagttttcgccccgaagaacgttttccaatgatgagcacttttaaagttctgctatgtggcgcggtattatcccgtattgacgccgggcaagagcaactcggtcgccgcatacactattctcagaatgacttggttgagtactcaccagtcacagaaaagcatcttacggatggcatgacagtaagagaattatgcagtgctgccataaccatgagtgataacactgcggccaacttacttctgacaacgatcggaggaccgaaggagctaaccgcttttttgcacaacatgggggatcatgtaactcgccttgatcgttgggaaccggagctgaatgaagccataccaaacgacgagcgtgacaccacgatgcctgtagcaatggcaacaacgttgcgcaaactattaactggcgaactacttactctagcttcccggcaacaattaatagactggatggaggcggataaagttgcaggaccacttctgcgctcggcccttccggctggctggtttattgctgataaatctggagccggtgagcgtgggtctcgcggtatcattgcagcactggggccagatggtaagccctcccgtatcgtagttatctacacgacggggagtcaggcaactatggatgaacgaaatagacagatcgctgagataggtgcctcactgattaagcattggtaactgtcagaccaagtttactcatatatactttagattgatttaaaacttcatttttaatttaaaaggatctaggtgaagatcctttttgataatctcatgaccaaaatcccttaacgtgagttttcgttccactgagcgtcagaccccgtagaaaagatcaaaggatcttcttgagatcctttttttctgcgcgtaatctgctgcttgcaaacaaaaaaaccaccgctaccagcggtggtttgtttgccggatcaagagctaccaactctttttccgaaggtaactggcttcagcagagcgcagataccaaatactgttcttctagtgtagccgtagttaggccaccacttcaagaactctgtagcaccgcctacatacctcgctctgctaatcctgttaccagccggttgtcagccgttaagtgttcctgtgtcactcaaaattgctttgagaggctctaagggcttctcagtgcgttacatccctggcttgttgtccacaaccgttaaaccttaaaagctttaaaagccttatatattcttttttttcttataaaacttaaaaccttagaggctatttaagttgctgatttatattaattttattgttcaaacatgagagcttagtacgtgaaacatgagagcttagtacgttagccatgagagcttagtacgttagccatgagggtttagttcgttaaacatgagagcttagtacgttaaacttgagagcttagtacgtgaaacatgagagcttagtacgtactatcaacaggttgaactgcccatgttctttcctgcgttatcagagcttatcggccagcctcgcagagcaggattcccgttgagcaccgccaggt"   # replace with your suffix (hardcoded)
 
+def revcomp(s: str) -> str:
+    comp = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
+    return s.translate(comp)[::-1]
+
 complete_path = "complete.fasta"
 complete_vector_path = "complete_vector.fasta"
 
 if os.path.exists(complete_path):
     with open(complete_path, "r") as cf:
         lines = cf.read().splitlines()
+
+    # Remove FASTA header if present
     if lines and lines[0].startswith(">"):
         seq = "".join(lines[1:])
     else:
         seq = "".join(lines)
-    new_seq = PREFIX_SEQ + seq + SUFFIX_SEQ
+
+    # --- Find primer1 (forward) ---
+    start_idx = seq.find(primer1_vector)
+    if start_idx == -1:
+        raise ValueError("primer1_vector not found in sequence")
+
+    # --- Find primer6 (reverse): try both orientations ---
+    p6_rc = revcomp(primer6_vector)
+
+    end_idx = seq.find(primer6_vector)
+    end_len = len(primer6_vector)
+
+    if end_idx == -1:
+        end_idx = seq.find(p6_rc)
+        end_len = len(p6_rc)
+
+    if end_idx == -1:
+        raise ValueError("primer6_vector not found in sequence (neither primer6_vector nor its reverse complement)")
+
+    # Make sure primer6 occurs after primer1 (common expectation)
+    if end_idx < start_idx:
+        # Sometimes primer6 might appear earlier due to repeats; try finding the next occurrence after primer1
+        end_idx = seq.find(primer6_vector, start_idx)
+        end_len = len(primer6_vector)
+        if end_idx == -1:
+            end_idx = seq.find(p6_rc, start_idx)
+            end_len = len(p6_rc)
+        if end_idx == -1:
+            raise ValueError("primer6 match exists, but not after primer1 (and no later occurrence found)")
+
+    # Include primer6 match fully
+    end_idx += end_len
+
+    trimmed_seq = seq[start_idx:end_idx]
+    new_seq = PREFIX_SEQ + trimmed_seq + SUFFIX_SEQ
+
     with open(complete_vector_path, "w") as outvf:
         outvf.write(">Complete_vector\n")
-        outvf.write(new_seq)
-
+        outvf.write(new_seq + "\n")
 
     # --------------------------------------------------
 # Move output files into gene-named directory
