@@ -26,8 +26,14 @@ gene = sys.argv[1]
 genome = sys.argv[2]
 species = sys.argv[3]
 plasmid = sys.argv[4]
-size =  sys.argv[5]
+size = sys.argv[5]
 MAX = sys.argv[6]
+
+# Optional argument: MAX_OVERHANG (default = 25)
+if len(sys.argv) > 7:
+    MAX_OVERHANG = int(sys.argv[7])
+else:
+    MAX_OVERHANG = 25
 
 # Create output directory based on gene file basename
 gene_basename = os.path.splitext(os.path.basename(gene))[0]
@@ -45,7 +51,11 @@ def outpath(filename):
 
 size = int(size) + 200
 maxsize = int(size) + 300
-MAX = int(MAX)
+
+
+if MAX_OVERHANG > 25:
+    raise ValueError("MAX_OVERHANG must be ≤ 25 bp")
+
 # Create the BLAST database for the genome
 os.system(f"makeblastdb -in {genome} -out tmp -dbtype nucl > /dev/null")
 
@@ -229,17 +239,25 @@ if species == "Kp":
     primer11 = primer9
     primer12 = primer10
 
-    #Define Overhangs
-    primer1_overhang = "ggtaccgggcccaagcttctcgagg"
-    primer2_overhang = "aacttcgaagcagctccagcctaca"
-    primer3_overhang = upstream_seq[-25:].lower()
-    primer4_overhang = downstream_seq[:25].translate(str.maketrans("ATGC", "TACG"))[::-1].lower()
-    primer5_overhang = "actgcaggtcgacggatccccggaa"
-    primer6_overhang = "gtggatcccccgggctgcaggaatt"
-    primer9_overhang = "ctcgtccgagggcaaaggaataggc"
-    primer10_overhang = "caccgctacacctggaattgcggcc"
-    primer11_overhang = "ctcgtccgagggcaaaggaataggc"
-    primer12_overhang = "gggatccactagttctagagcggcc"
+    #Trim overhangs
+    def trim_overhang(seq, n=MAX_OVERHANG):
+        return seq[-n:].lower()
+
+
+    # Define Overhangs (all truncated to MAX_OVERHANG_LEN)
+
+    primer1_overhang  = trim_overhang("ggtaccgggcccaagcttctcgagg")
+    primer2_overhang  = trim_overhang("aacttcgaagcagctccagcctaca")
+    primer3_overhang  = upstream_seq[-MAX_OVERHANG:].lower()
+    primer4_overhang  = downstream_seq[:MAX_OVERHANG].translate(
+        str.maketrans("ATGC", "TACG")
+        )[::-1].lower()
+    primer5_overhang  = trim_overhang("actgcaggtcgacggatccccggaa")
+    primer6_overhang  = trim_overhang("gtggatcccccgggctgcaggaatt")
+    primer9_overhang  = trim_overhang("ctcgtccgagggcaaaggaataggc")
+    primer10_overhang = trim_overhang("caccgctacacctggaattgcggcc")
+    primer11_overhang = trim_overhang("ctcgtccgagggcaaaggaataggc")
+    primer12_overhang = trim_overhang("gggatccactagttctagagcggcc")
 
     #Add Overhangs
     primer1_vector = primer1
@@ -445,6 +463,36 @@ with open(complement_vector2_path, "w") as outvf:
     outvf.write(">Complement_vector\n")
     outvf.write(comp_vector2 + "\n")
 
+
+settings_text = (
+    "\nSETTINGS\n"
+    + "-" * 50 + "\n"
+    f"Gene:                 {gene_basename}\n"
+    f"Genome:               {genome_basename}\n"
+    f"Species:              {species}\n"
+    f"Plasmid:              {plasmid}\n"
+    f"Target flank size:    {size - 200} bp\n"
+    f"Extended flank size:  {maxsize} bp\n"
+    f"Primer max Tm:        {MAX}\n"
+    f"Max overhang length:  {MAX_OVERHANG} bp\n"
+    + "-" * 50 + "\n\n"
+    + "=" * 50 + "\n"
+    "FINISHED PRIMERS SUCCESSFULLY DESIGNED\n"
+    + "=" * 50 + "\n"
+)
+
+# Print to terminal
+print(settings_text)
+
+# Write to file
+settings_file = f"settings_{gene_basename}_{genome_basename}.txt"
+with open(settings_file, "w") as f:
+    f.write(settings_text)
+
+
+
+
+
 # --------------------------------------------------
 # Move output files into gene-named directory
 # --------------------------------------------------
@@ -459,8 +507,10 @@ output_files = [
     "downstream.fasta",
     "complete.fasta",
     complement_vector_path,
+    complement_vector2_path,
     complete_vector_path,
-    primers_csv
+    primers_csv,
+    settings_file
 ]
 
 
@@ -474,7 +524,3 @@ for fname in output_files:
             # File exists — overwrite
             os.remove(dest)
             shutil.move(fname, dest)
-
-print("\n" + "="*50)
-print("FINISHED PRIMERS SUCCESSFULLY DESIGNED")
-print("="*50 + "\n")
