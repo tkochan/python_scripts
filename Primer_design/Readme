@@ -17,11 +17,11 @@ blast (2.13.0+) https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/
 Usage:
 
 python3 Primer_design.py {gene fastA file} {genome fastA file} {Species Kp or Pa} {plasmid 1 or 2 (only important for Pa)} {size of each fragment in b} {Maximum melting temp of primers}
-
+{overhang size default is 25bp}
 Using the files in the sample data folder:
 
 For Klebsiella (pUC16R6k)
-python3 Primer_design.py genes.txt genome.fasta Kp 1 500 63
+python3 Primer_design.py genes.txt genome.fasta Kp 1 500 63 25
 
 For Pseudomonas (pexG2)
 python3 Primer_design.py genes.txt genome.fasta Pa 1 750 68
